@@ -16,7 +16,7 @@ pip install arithmetipy
 
 ```bash
 pip install maturin
-git clone https://github.com/yourname/arithmetipy
+git clone https://github.com/khoda81/arithmetipy
 cd arithmetipy
 maturin develop
 ````
