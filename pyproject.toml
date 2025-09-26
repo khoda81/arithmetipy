@@ -4,12 +4,40 @@ build-backend = "maturin"
 
 [project]
 name = "arithmetipy"
+description = "Python bindings for a Rust implementation of arithmetic coding (encoder/decoder)."
+readme = { file = "README.md", content-type = "text/markdown" }
 requires-python = ">=3.8"
+license = { file = "LICENSE" }
+authors = [{ name = "Mahdi Khodabandeh", email = "20.mahdikh.0@gmail.com" }]
+keywords = [
+    "arithmetic coding",
+    "compression",
+    "entropy coding",
+    "rust",
+    "bindings",
+]
 classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
     "Programming Language :: Rust",
     "Programming Language :: Python :: Implementation :: CPython",
     "Programming Language :: Python :: Implementation :: PyPy",
+    "Topic :: Software Development :: Libraries",
+    "Topic :: System :: Archiving :: Compression",
 ]
 dynamic = ["version"]
+
+[project.urls]
+Homepage = "https://github.com/khoda81/arithmetipy"
+Repository = "https://github.com/khoda81/arithmetipy"
+Issues = "https://github.com/khoda81/arithmetipy/issues"
+
 [tool.maturin]
 features = ["pyo3/extension-module"]
