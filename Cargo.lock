@@ -10,7 +10,7 @@ checksum = "fd8d1ec5372b6183f3aeeddd43f298d3b1940aa2722c334eaf320f1513d83d06"
 
 [[package]]
 name = "arithmetipy"
-version = "1.0.0"
+version = "0.3.0"
 dependencies = [
  "arithmetify",
  "pyo3",
