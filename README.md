@@ -2,7 +2,7 @@
 
 Python bindings for a Rust implementation of **arithmetic coding**.  
 This library provides streaming **arithmetic encoder** and **decoder** with 32-bit precision.  
-It’s built in Rust for speed, exposed to Python via [PyO3](https://github.com/PyO3/pyo3) and [maturin]
+It’s built in Rust for speed, exposed to Python via [PyO3](https://github.com/PyO3/pyo3) and [maturin](https://github.com/PyO3/maturin)
 
 ---
 
