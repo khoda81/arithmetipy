@@ -1,0 +1,105 @@
+name: Nobitex synthetic FX probe
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Fetch Nobitex books and derive USDT/IRT
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json
+          import statistics
+          import time
+          import urllib.request
+          from decimal import Decimal
+
+          URL = "https://api.nobitex.ir/v3/orderbook/all"
+          req = urllib.request.Request(
+              URL,
+              headers={
+                  "User-Agent": "github-actions-nobitex-market-probe/1.0",
+                  "Accept": "application/json",
+              },
+          )
+
+          started = time.time()
+          with urllib.request.urlopen(req, timeout=20) as response:
+              print(f"HTTP {response.status} {response.reason}")
+              data = json.load(response)
+          elapsed = time.time() - started
+          print(f"Fetched {URL} in {elapsed:.3f}s; status={data.get('status')!r}")
+          print()
+
+          now_ms = int(time.time() * 1000)
+          assets = ["BTC", "ETH", "SOL", "XRP", "DOGE", "ADA", "TRX", "LTC"]
+          rows = []
+
+          def top(book):
+              bid = Decimal(book["bids"][0][0])
+              ask = Decimal(book["asks"][0][0])
+              updated = int(book.get("lastUpdate", 0))
+              age_s = (now_ms - updated) / 1000 if updated else float("nan")
+              return bid, ask, age_s
+
+          print("Synthetic USDT/IRT through asset:")
+          print("asset  implied_bid  implied_ask       mid   spread_bp  worst_age_s")
+          for asset in assets:
+              irt_key = f"{asset}IRT"
+              usdt_key = f"{asset}USDT"
+              if irt_key not in data or usdt_key not in data:
+                  print(f"{asset:5}  missing route ({irt_key in data=}, {usdt_key in data=})")
+                  continue
+
+              try:
+                  irt_bid, irt_ask, irt_age = top(data[irt_key])
+                  usd_bid, usd_ask, usd_age = top(data[usdt_key])
+              except (KeyError, IndexError):
+                  print(f"{asset:5}  empty/incomplete book")
+                  continue
+
+              implied_bid = irt_bid / usd_ask
+              implied_ask = irt_ask / usd_bid
+              mid = (implied_bid + implied_ask) / 2
+              spread_bp = (implied_ask / implied_bid - 1) * Decimal(10_000)
+              worst_age = max(irt_age, usd_age)
+              rows.append((asset, implied_bid, implied_ask, mid, spread_bp, worst_age))
+              print(
+                  f"{asset:5}  {float(implied_bid):11,.1f}  {float(implied_ask):11,.1f}"
+                  f"  {float(mid):11,.1f}  {float(spread_bp):9.2f}  {worst_age:11.2f}"
+              )
+
+          print()
+          if rows:
+              mids = [float(r[3]) for r in rows]
+              print(f"median synthetic mid: {statistics.median(mids):,.1f} IRT/USDT")
+              print(f"range of mids:         {min(mids):,.1f} .. {max(mids):,.1f}")
+
+          print()
+          direct = data.get("USDTIRT")
+          if direct is None:
+              print("Direct USDTIRT: NOT PRESENT in /v3/orderbook/all")
+          else:
+              try:
+                  bid, ask, age = top(direct)
+                  mid = (bid + ask) / 2
+                  print(
+                      "Direct USDTIRT: "
+                      f"bid={float(bid):,.1f} ask={float(ask):,.1f} "
+                      f"mid={float(mid):,.1f} age={age:.2f}s"
+                  )
+              except (KeyError, IndexError):
+                  print(
+                      "Direct USDTIRT: key is present but book is empty/incomplete; "
+                      f"lastUpdate={direct.get('lastUpdate')!r}"
+                  )
+
+          if not rows:
+              raise SystemExit("No usable synthetic routes found")
+          PY
