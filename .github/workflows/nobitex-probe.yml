@@ -20,7 +20,7 @@ jobs:
           import urllib.request
           from decimal import Decimal
 
-          URL = "https://api.nobitex.ir/v3/orderbook/all"
+          URL = "https://apiv2.nobitex.ir/v3/orderbook/all"
           req = urllib.request.Request(
               URL,
               headers={
