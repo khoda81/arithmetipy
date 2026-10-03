@@ -1,0 +1,24 @@
+name: Nobitex synthetic FX probe
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Pure market efficiency — 1m toman
+        run: python scripts/nobitex_fx_router.py 1000000 --from TOMAN --to USDT --fee-irt-pct 0 --fee-usdt-pct 0 --top 8
+
+      - name: Pure market efficiency — 10m toman
+        run: python scripts/nobitex_fx_router.py 10000000 --from TOMAN --to USDT --fee-irt-pct 0 --fee-usdt-pct 0 --top 8 --no-books
+
+      - name: Pure market efficiency — 100m toman
+        run: python scripts/nobitex_fx_router.py 100000000 --from TOMAN --to USDT --fee-irt-pct 0 --fee-usdt-pct 0 --top 8 --no-books
+
+      - name: Fee-corrected example — 10m toman
+        run: python scripts/nobitex_fx_router.py 10000000 --from TOMAN --to USDT --top 8 --no-books
